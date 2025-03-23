@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import * as videoController from "../controllers/videoController.js";
 const router = express.Router();
-const videoController = require("../app/controllers/videoController");
-router.post("/upload", videoController.upload);
-router.get("/download", videoController.download);
-router.post("/store", videoController.store);
-
-module.exports = router;
+router.post("/upload", videoController.videoUpload);
+router.get("/download", videoController.videoDownload);
+router.post("/store", videoController.videoStore);
+router.delete("/delete", videoController.videoDelete);
+router.get("/convert", videoController.videoConvert);
+export default router;

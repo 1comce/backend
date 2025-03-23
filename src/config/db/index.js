@@ -1,7 +1,8 @@
-const { Pool } = require("pg");
-const mongoose = require("mongoose");
+import pkg from "pg";
+import mongoose from "mongoose";
 // Create a new pool instance for connecting to the PostgreSQL database
-const pool = new Pool({
+const { Pool } = pkg;
+export const pool = new Pool({
   user: process.env.PGUSER,
   host: process.env.PGHOST,
   database: process.env.PGDATABASE,
@@ -12,7 +13,7 @@ const pool = new Pool({
   },
 });
 
-async function connect() {
+export async function connect() {
   try {
     await mongoose.connect(
       `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.iyo0i.mongodb.net/nextjs?retryWrites=true&w=majority&appName=Cluster0`
@@ -22,4 +23,3 @@ async function connect() {
     console.log("Connect to mongodb failure!: " + error);
   }
 }
-module.exports = { pool, connect };

@@ -1,10 +1,13 @@
-const express = require("express");
-const path = require("path");
-require("dotenv").config();
-const cors = require("cors");
-const { pool, connect } = require("./config/db");
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+import cors from "cors";
+import { pool, connect } from "./config/db/index.js";
+import route from "./routes/index.js";
+import errorHandler from "./middleware/errorHandler.js";
 const app = express();
-const route = require("./routes");
+dotenv.config();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.raw({ type: "application/octet-stream", limit: "20mb" }));
@@ -15,8 +18,9 @@ app.use(
   })
 );
 const port = 5000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 app.use("/static", express.static(path.join(__dirname, "..", "public")));
-
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
@@ -61,8 +65,9 @@ app.get("/insert-test", async (req, res) => {
     res.status(500).send("Error inserting data");
   }
 });
+route(app);
+app.use(errorHandler);
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-  route(app);
+  console.log(`App listening on port ${port}`);
   connect();
 });

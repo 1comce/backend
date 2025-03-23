@@ -1,25 +1,59 @@
-const fs = require("fs");
-const path = require("path");
-const { pool } = require("../../config/db");
-const { promisePool } = require("../../utils/promisepool");
-
-const file_path = path.join(__dirname, "..", "..", "..", "public", "uploads");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import * as Video from "../models/videoModel.js";
+import { encodeHLSWithMultipleVideoStreams } from "../utils/ffmpeg.js";
+import { promisePool } from "../utils/promisePool.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = path.join(__dirname, "..", "..", "public", "uploads");
 const processingVideos = new Set();
-const store = async (req, res) => {
+export const videoConvert = async (req, res) => {
+  const { file_path } = req.query;
+  if (!file_path) return res.status(400).send("No file path");
+  try {
+    const result = await encodeHLSWithMultipleVideoStreams(
+      uploadDir + "/" + file_path
+    );
+    if (!result) return res.status(400).send("convert error");
+    return res.status(200).send("convert success");
+  } catch (error) {
+    return res.status(500).send("Catch convert error");
+  }
+};
+export const videoDelete = async (req, res) => {
+  const { id } = req.query;
+  if (!id) {
+    return res.status(400).send("Invalid request");
+  }
+  try {
+    const result = await Video.deleteVideo(id);
+    if (!result) {
+      return res.status(500).send("Delete video failed");
+    }
+    res.status(204).send("Video deleted successfully");
+  } catch (error) {
+    console.log("Error deleting video:", error);
+    res.status(500).send("Error deleting video");
+  }
+};
+export const videoStore = async (req, res) => {
   const { title, description, url } = req.body;
   if (!title || !description || !url) {
     return res.status(400).send("Invalid request");
   }
   try {
-    const insertQuery = `INSERT INTO videos (title, description, url) VALUES ($1, $2, $3) RETURNING *`;
-    const { rows } = await pool.query(insertQuery, [title, description, url]);
+    const result = await Video.storeVideo(title, description, url);
+    if (!result) {
+      return res.status(500).send("Store video failed");
+    }
     res.status(201).json(rows[0]);
   } catch (error) {
-    console.log("Error inserting data:", error);
-    res.status(500).send("Error inserting data");
+    console.log("Error storing video:", error);
+    res.status(500).send("Error storing video");
   }
 };
-const upload = async (req, res) => {
+export const videoUpload = async (req, res) => {
   // const file = Buffer.from(req.file.buffer);
   // const file = fs.readFileSync(
   //   file_path + `/tiny_wild_bird_searching_for_food_in_nature_6892037.mp4`
@@ -42,7 +76,7 @@ const upload = async (req, res) => {
   console.log("file", result.result.document.file_id);
   return res.status(200).json({ file_id: result.result.document.file_id });
 };
-const download = async (req, res) => {
+export const videoDownload = async (req, res) => {
   const { id } = req.query;
   if (!id) {
     return res.status(400).send("Invalid request");
@@ -86,14 +120,12 @@ const getFile = async (file_id) => {
     console.log(`Error processing file with id ${file_id}:`, error);
   }
 };
-const getbatch = async (id) => {
+const getbatch = async (id, filedir = uploadDir) => {
   try {
     // Fetch all rows from the database
-    const { rows } = await pool.query("SELECT * FROM videos WHERE id = $1", [
-      id,
-    ]);
-    const file_ids = rows[0].url.mp4;
-    const file = file_path + `/${rows[0].title}.mp4`;
+    const row = await Video.getVideo(id);
+    const file_ids = row.url.mp4;
+    const finalDir = filedir + `/${row.title}.mp4`;
     const promises = file_ids.map((file_id) => {
       return getFile(file_id);
     });
@@ -104,13 +136,13 @@ const getbatch = async (id) => {
           `${process.env.TELEGRAM_API_FILE_URL}${process.env.BOT_TOKEN}/${result.file_path}`
         );
         let buffer = await fileResponse.bytes();
-        fs.appendFileSync(file, buffer);
+        fs.appendFileSync(finalDir, buffer);
         console.log("File append success file id: ", result.file_id);
         buffer = null;
       }
     } catch (error) {
       console.log(`Error processing:`, error);
-      fs.unlink(file, (err) => {
+      fs.unlink(finalDir, (err) => {
         if (err) {
           console.log("Error deleting file in error catch:", err);
         } else {
@@ -120,13 +152,8 @@ const getbatch = async (id) => {
       return null;
     }
 
-    return file;
+    return finalDir;
   } catch (error) {
     console.log("Error fetching rows from the database:", error);
   }
-};
-module.exports = {
-  upload,
-  download,
-  store,
 };

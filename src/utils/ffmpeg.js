@@ -1,12 +1,11 @@
-const path = require("path");
-
+import path from "path";
+import { $ } from "zx";
+import slash from "slash";
 const MAXIMUM_BITRATE_720P = 5 * 10 ** 6; // 5Mbps
 const MAXIMUM_BITRATE_1080P = 8 * 10 ** 6; // 8Mbps
 const MAXIMUM_BITRATE_1440P = 16 * 10 ** 6; // 16Mbps
 
 export const checkVideoHasAudio = async (filePath) => {
-  const { $ } = await import("zx");
-  const slash = (await import("slash")).default;
   const { stdout } = await $`ffprobe ${[
     "-v",
     "error",
@@ -22,8 +21,6 @@ export const checkVideoHasAudio = async (filePath) => {
 };
 
 const getBitrate = async (filePath) => {
-  const { $ } = await import("zx");
-  const slash = (await import("slash")).default;
   const { stdout } = await $`ffprobe ${[
     "-v",
     "error",
@@ -39,9 +36,6 @@ const getBitrate = async (filePath) => {
 };
 
 const getResolution = async (filePath) => {
-  const { $ } = await import("zx");
-  const slash = (await import("slash")).default;
-
   const { stdout } = await $`ffprobe ${[
     "-v",
     "error",
@@ -75,9 +69,6 @@ const encodeMax720 = async ({
   outputSegmentPath,
   resolution,
 }) => {
-  const { $ } = await import("zx");
-  const slash = (await import("slash")).default;
-
   const args = [
     "-y",
     "-i",
@@ -138,9 +129,6 @@ const encodeMax1080 = async ({
   outputSegmentPath,
   resolution,
 }) => {
-  const { $ } = await import("zx");
-  const slash = (await import("slash")).default;
-
   const args = [
     "-y",
     "-i",
@@ -207,9 +195,6 @@ const encodeMax1440 = async ({
   outputSegmentPath,
   resolution,
 }) => {
-  const { $ } = await import("zx");
-  const slash = (await import("slash")).default;
-
   const args = [
     "-y",
     "-i",
@@ -295,9 +280,6 @@ const encodeMaxOriginal = async ({
   outputSegmentPath,
   resolution,
 }) => {
-  const { $ } = await import("zx");
-  const slash = (await import("slash")).default;
-
   const args = [
     "-y",
     "-i",
