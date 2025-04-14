@@ -8,7 +8,7 @@
 - [x] Connect the **Express.js** backend to **MongoDB** using **Mongoose** 
 
 ### Develop a Simple Web Scraping Feature
-- [ ] Choose a **target website** with movie data
+- [x] Choose a **target website** with movie data
 - [ ] Use **Cheerio** to scrape basic movie info
 - [ ] Store the scraped data in **MongoDB**
 
