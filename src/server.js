@@ -3,71 +3,64 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import cors from "cors";
-import { pool, connect } from "./config/db/index.js";
+import { limiter } from "./middleware/limiterHandler.js";
+import { pool } from "./config/db/index.js";
 import route from "./routes/index.js";
 import errorHandler from "./middleware/errorHandler.js";
-const app = express();
-dotenv.config();
-app.use(cors());
-app.use(express.json({ limit: "50mb" }));
-app.use(express.raw({ type: "application/octet-stream", limit: "20mb" }));
-app.use(
-  express.urlencoded({
-    limit: "50mb",
-    extended: true,
-  })
-);
+import { ROOT_DIR } from "./utils/paths.js";
+import flash from "connect-flash";
+import session from "express-session";
 const port = 5000;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use("/static", express.static(path.join(__dirname, "..", "public")));
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-app.get("/setup", async (req, res) => {
-  const createTable = `CREATE TABLE IF NOT EXISTS videos (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    title VARCHAR(255),
-    description TEXT,
-    url JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`;
-  try {
-    await pool.query(createTable);
-    res.send("Setup complete");
-  } catch (err) {
-    console.error("Error setting up table", err);
-    res.status(500).send("Error setting up table");
-  }
-});
-app.get("/test", async (req, res) => {
-  try {
-    const { rows } = await pool.query("SELECT * FROM videos");
-    res.json(rows);
-  } catch (error) {
-    console.log(error);
-  }
-});
-app.get("/insert-test", async (req, res) => {
-  const insertQuery = `INSERT INTO videos (title, description, url) 
-  VALUES 
-    ('buggy', 'A buggy.', 
-    '{"mp4": ["BQACAgUAAyEGAASOPfGbAAM4Z9lC7xVHNdQjVbKwzzSnut8D89wAArAXAAItfNBW5P74pToNR402BA", 
-      "BQACAgUAAyEGAASOPfGbAAM6Z9lC9LlVN3b1uIJW5A3LvUtrCXQAArIXAAItfNBWHDcgYhbjW1U2BA", 
-      "BQACAgUAAyEGAASOPfGbAAM7Z9lC-PZl4B8HqCg48c6IYcRl92YAArMXAAItfNBWGhPCCcjsuDM2BA", 
-      "BQACAgUAAyEGAASOPfGbAAM8Z9lC-igoj3s8lhuKtpewWZyNdf8AArQXAAItfNBWcnBvH0yApIE2BA"]}')`;
+const start = async () => {
+  const app = express();
+  dotenv.config();
+  app.use(cors());
+  // app.use(limiter);
+  app.use(
+    session({
+      secret: "123456",
+      resave: false,
+      saveUninitialized: true,
+      cookie: { maxAge: 60 * 60 * 1000 }, // 1 hour
+    })
+  );
+  app.use(flash());
+  app.set("views", path.join(ROOT_DIR, "views"));
+  app.set("view engine", "ejs");
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.raw({ type: "application/octet-stream", limit: "20mb" }));
+  app.use(
+    express.urlencoded({
+      limit: "50mb",
+      extended: true,
+    })
+  );
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  app.use(
+    express.static(path.join(__dirname, "..", "public"), {
+      setHeaders: (res, path, stat) => {
+        res.set("Cross-Origin-Resource-Policy", "cross-origin");
+      },
+    })
+  );
+  app.get("/", (req, res) => {
+    res.send("Hello World!");
+  });
 
-  try {
-    await pool.query(insertQuery);
-    res.send("Insert successful");
-  } catch (err) {
-    console.error("Error inserting data", err);
-    res.status(500).send("Error inserting data");
-  }
-});
-route(app);
-app.use(errorHandler);
-app.listen(port, () => {
-  console.log(`App listening on port ${port}`);
-  connect();
-});
+  app.get("/test", async (req, res) => {
+    try {
+      const { rows } = await pool.query("SELECT * FROM movies");
+      console.log("test route was called");
+      res.json(rows);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+  route(app);
+  app.use(errorHandler);
+  app.listen(port, () => {
+    console.log(`AdminJS started on http://localhost:${port}/admin`);
+  });
+};
+start();

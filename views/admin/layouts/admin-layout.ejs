@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %> | Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="/css/admin.css" />
+  </head>
+  <body>
+    <div class="admin-container">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div id="sidebar-toggle" class="sidebar-toggle">
+            <i class="fas fa-bars"></i>
+          </div>
+          <h1 class="title">Admin Panel</h1>
+        </div>
+
+        <div class="sidebar-content">
+          <!-- Dashboard -->
+          <div class="sidebar-section">
+            <ul class="sidebar-menu">
+              <li
+                class="sidebar-menu-item <%= active === 'dashboard' ? 'active' : '' %>"
+              >
+                <a href="/admin/dashboard">
+                  <div class="sidebar-menu-item-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                  </div>
+                  <span class="sidebar-menu-item-text">Dashboard</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Movies Section -->
+          <div class="sidebar-section">
+            <div class="sidebar-label">Movies</div>
+            <ul class="sidebar-menu">
+              <li
+                class="sidebar-menu-item <%= active === 'movieList' ? 'active' : '' %>"
+              >
+                <a href="/admin/movies/list">
+                  <div class="sidebar-menu-item-icon">
+                    <i class="fas fa-film"></i>
+                  </div>
+                  <span class="sidebar-menu-item-text">Movie List</span>
+                </a>
+              </li>
+              <li
+                class="sidebar-menu-item <%= active === 'movieCategories' ? 'active' : '' %>"
+              >
+                <a href="/admin/movies/categories">
+                  <div class="sidebar-menu-item-icon">
+                    <i class="fas fa-tags"></i>
+                  </div>
+                  <span class="sidebar-menu-item-text">Categories</span>
+                </a>
+              </li>
+              <li
+                class="sidebar-menu-item <%= active === 'errorMovies' ? 'active' : '' %>"
+              >
+                <a href="/admin/movies/errors">
+                  <div class="sidebar-menu-item-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </div>
+                  <span class="sidebar-menu-item-text">Error Movies</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Options Section -->
+          <div class="sidebar-section">
+            <div class="sidebar-label">Options</div>
+            <ul class="sidebar-menu">
+              <li
+                class="sidebar-menu-item <%= active === 'settings' ? 'active' : '' %>"
+              >
+                <a href="/admin/options/settings">
+                  <div class="sidebar-menu-item-icon">
+                    <i class="fas fa-cog"></i>
+                  </div>
+                  <span class="sidebar-menu-item-text">Settings</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Administration Section -->
+          <div class="sidebar-section">
+            <div class="sidebar-label">Administration</div>
+            <ul class="sidebar-menu">
+              <li
+                class="sidebar-menu-item <%= active === 'users' ? 'active' : '' %>"
+              >
+                <a href="/admin/administration/users">
+                  <div class="sidebar-menu-item-icon">
+                    <i class="fas fa-users"></i>
+                  </div>
+                  <span class="sidebar-menu-item-text">Users</span>
+                </a>
+              </li>
+              <li
+                class="sidebar-menu-item <%= active === 'authentication' ? 'active' : '' %>"
+              >
+                <a href="/admin/administration/authentication">
+                  <div class="sidebar-menu-item-icon">
+                    <i class="fas fa-lock"></i>
+                  </div>
+                  <span class="sidebar-menu-item-text">Authentication</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Mobile sidebar backdrop -->
+      <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+      <!-- Main Content -->
+      <main id="main-content" class="main-content">
+        <header class="main-header">
+          <div class="header-title">
+            <div
+              id="sidebar-toggle-mobile"
+              class="sidebar-toggle-mobile d-md-none"
+            >
+              <i class="fas fa-bars"></i>
+            </div>
+            <h1><%= title %></h1>
+          </div>
+
+          <div class="header-actions">
+            <div class="user-dropdown">
+              <div id="user-dropdown-toggle" class="user-dropdown-toggle">
+                <img
+                  src="https://ui-avatars.com/api/?name=<%= user.username %>&background=0D8ABC&color=fff"
+                  alt="<%= user.username %>"
+                  class="rounded-circle"
+                />
+                <span><%= user.username %></span>
+                <i class="fas fa-chevron-down ms-2"></i>
+              </div>
+              <div id="user-dropdown-menu" class="user-dropdown-menu">
+                <a href="#" class="user-dropdown-item">Profile</a>
+                <a href="#" class="user-dropdown-item">Settings</a>
+                <a href="/admin/logout" class="user-dropdown-item">Logout</a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div class="content p-3"><%- body %></div>
+      </main>
+    </div>
+
+    <!-- jQuery (already included in head, but can also be at end of body) -->
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Admin JS -->
+    <script src="/js/admin.js"></script>
+  </body>
+</html>

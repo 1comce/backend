@@ -73,12 +73,15 @@ const encodeMax720 = async ({
     "-y",
     "-i",
     slash(inputPath),
+    "-hide_banner",
+    "-loglevel",
+    "error",
     "-preset",
     "veryslow",
     "-g",
     "48",
     "-crf",
-    "17",
+    "30",
     "-sc_threshold",
     "0",
     "-map",
@@ -110,6 +113,12 @@ const encodeMax720 = async ({
     "hls",
     "-hls_time",
     "6",
+    "-hls_flags",
+    "independent_segments",
+    "-hls_playlist_type",
+    "vod",
+    "-hls_segment_type",
+    "fmp4",
     "-hls_list_size",
     "0",
     "-hls_segment_filename",
@@ -133,6 +142,9 @@ const encodeMax1080 = async ({
     "-y",
     "-i",
     slash(inputPath),
+    "-hide_banner",
+    "-loglevel",
+    "error",
     "-preset",
     "veryslow",
     "-g",
@@ -199,6 +211,9 @@ const encodeMax1440 = async ({
     "-y",
     "-i",
     slash(inputPath),
+    "-hide_banner",
+    "-loglevel",
+    "error",
     "-preset",
     "veryslow",
     "-g",
@@ -284,12 +299,15 @@ const encodeMaxOriginal = async ({
     "-y",
     "-i",
     slash(inputPath),
+    "-hide_banner",
+    "-loglevel",
+    "error",
     "-preset",
     "veryslow",
     "-g",
     "48",
     "-crf",
-    "17",
+    "30",
     "-sc_threshold",
     "0",
   ];
@@ -345,7 +363,7 @@ const encodeMaxOriginal = async ({
     "-f",
     "hls",
     "-hls_time",
-    "6",
+    "4",
     "-hls_list_size",
     "0",
     "-hls_segment_filename",
@@ -363,7 +381,7 @@ export const encodeHLSWithMultipleVideoStreams = async (inputPath) => {
     getResolution(inputPath),
   ]);
   const parent_folder = path.join(inputPath, "..");
-  const outputSegmentPath = path.join(parent_folder, "v%v/fileSequence%d.ts");
+  const outputSegmentPath = path.join(parent_folder, "v%v/fileSequence%d.m4s");
   const outputPath = path.join(parent_folder, "v%v/prog_index.m3u8");
   const bitrate720 =
     bitrate > MAXIMUM_BITRATE_720P ? MAXIMUM_BITRATE_720P : bitrate;
@@ -371,29 +389,33 @@ export const encodeHLSWithMultipleVideoStreams = async (inputPath) => {
     bitrate > MAXIMUM_BITRATE_1080P ? MAXIMUM_BITRATE_1080P : bitrate;
   const bitrate1440 =
     bitrate > MAXIMUM_BITRATE_1440P ? MAXIMUM_BITRATE_1440P : bitrate;
-  const isHasAudio = await checkVideoHasAudio(inputPath);
-  let encodeFunc = encodeMax720;
-  if (resolution.height > 720) {
-    encodeFunc = encodeMax1080;
+  try {
+    const isHasAudio = await checkVideoHasAudio(inputPath);
+    let encodeFunc = encodeMax720;
+    if (resolution.height > 720) {
+      encodeFunc = encodeMax1080;
+    }
+    if (resolution.height > 1080) {
+      encodeFunc = encodeMax1440;
+    }
+    if (resolution.height > 1440) {
+      encodeFunc = encodeMaxOriginal;
+    }
+    await encodeFunc({
+      bitrate: {
+        720: bitrate720,
+        1080: bitrate1080,
+        1440: bitrate1440,
+        original: bitrate,
+      },
+      inputPath,
+      isHasAudio,
+      outputPath,
+      outputSegmentPath,
+      resolution,
+    });
+    return parent_folder + "/master.m3u8";
+  } catch {
+    return null;
   }
-  if (resolution.height > 1080) {
-    encodeFunc = encodeMax1440;
-  }
-  if (resolution.height > 1440) {
-    encodeFunc = encodeMaxOriginal;
-  }
-  await encodeFunc({
-    bitrate: {
-      720: bitrate720,
-      1080: bitrate1080,
-      1440: bitrate1440,
-      original: bitrate,
-    },
-    inputPath,
-    isHasAudio,
-    outputPath,
-    outputSegmentPath,
-    resolution,
-  });
-  return true;
 };

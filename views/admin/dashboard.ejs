@@ -1,0 +1,44 @@
+<%- include('layouts/admin-layout', { title: 'Dashboard', active: 'dashboard',
+user: user, body: `
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h2 class="m-0 fw-bold">Welcome to the Admin Dashboard</h2>
+  </div>
+  <div class="card-body">
+    <p>
+      This is the main dashboard of your admin panel. You can add widgets,
+      statistics, and other important information here.
+    </p>
+    <p>
+      Navigate through the sidebar to access different sections of the admin
+      panel.
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white py-3">
+        <h3 class="m-0 fw-bold fs-5">Quick Stats</h3>
+      </div>
+      <div class="card-body">
+        <p class="mb-2">Total Movies: <span class="fw-bold">120</span></p>
+        <p class="mb-2">Categories: <span class="fw-bold">15</span></p>
+        <p class="mb-2">Users: <span class="fw-bold">45</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8 mb-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white py-3">
+        <h3 class="m-0 fw-bold fs-5">Recent Activity</h3>
+      </div>
+      <div class="card-body">
+        <p>No recent activity to display.</p>
+      </div>
+    </div>
+  </div>
+</div>
+` }) %>

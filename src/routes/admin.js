@@ -1,0 +1,11 @@
+import express from "express";
+import * as adminController from "../controllers/adminController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+const router = express.Router();
+router.get("/", adminController.adminPage);
+router.get("/login", adminController.loginPage);
+router.post("/login", adminController.login);
+router.get("/logout", adminController.logout);
+router.use("/*", adminController.adminProtected);
+router.get("/dashboard", authMiddleware, adminController.dashboard);
+export default router;
